@@ -101,11 +101,24 @@ wireSafetyGate();
 console.log(`
 Done! Next steps:
 
-  1. Add to your root layout (dev-only):
-       import { DesignAgentOverlay } from "@payglocal_ui/lumen/client";
-       import "@payglocal_ui/lumen/styles.css";
-       // ...
-       {process.env.NODE_ENV === "development" && <DesignAgentOverlay />}
+  1. Add to your root layout. Use a conditional dynamic import (NOT a static
+     import) so the agent is dead-code-eliminated from production builds — a
+     static import ships the whole client module to prod even when not rendered:
+
+       import dynamic from "next/dynamic";
+
+       const DesignAgentOverlay =
+         process.env.NODE_ENV === "development"
+           ? dynamic(() =>
+               Promise.all([
+                 import("@payglocal_ui/lumen/client"),
+                 import("@payglocal_ui/lumen/styles.css"),
+               ]).then(([m]) => m.DesignAgentOverlay),
+             )
+           : null;
+
+       // ...inside <body>:
+       {DesignAgentOverlay && <DesignAgentOverlay />}
 
   2. Edit LUMEN.md to describe your project's conventions.
 

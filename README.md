@@ -62,23 +62,40 @@ export const { GET, POST, DELETE, runtime, dynamic } = createLumenHandler({
 
 ### 2. Root layout
 
-Add the overlay to your root layout, gated to development:
+Add the overlay to your root layout using a **conditional dynamic import**, so
+the bundler dead-code-eliminates the agent (and its styles) from production
+builds:
 
 ```tsx
-import { DesignAgentOverlay } from "@payglocal_ui/lumen/client";
-import "@payglocal_ui/lumen/styles.css";
+import dynamic from "next/dynamic";
+
+// Dev-only. A conditional dynamic import keeps the agent out of prod bundles.
+const DesignAgentOverlay =
+  process.env.NODE_ENV === "development"
+    ? dynamic(() =>
+        Promise.all([
+          import("@payglocal_ui/lumen/client"),
+          import("@payglocal_ui/lumen/styles.css"),
+        ]).then(([m]) => m.DesignAgentOverlay),
+      )
+    : null;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
         {children}
-        {process.env.NODE_ENV === "development" && <DesignAgentOverlay />}
+        {DesignAgentOverlay && <DesignAgentOverlay />}
       </body>
     </html>
   );
 }
 ```
+
+> **Do not use a static `import { DesignAgentOverlay } from ".../client"`.** A
+> static import ships the entire `"use client"` module to production even when
+> the render is gated behind `NODE_ENV` — the `postbuild` safety gate will catch
+> this and fail your build. The conditional dynamic import above is required.
 
 ### 3. Teach it your conventions
 
