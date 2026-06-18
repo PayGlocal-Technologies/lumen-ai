@@ -1,6 +1,6 @@
 {
   "name": "@payglocal_ui/lumen",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Dev-only in-app AI design agent — powered by Claude Code",
   "keywords": [
     "design-agent",
@@ -38,8 +38,8 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "lumen-assert-no-agent": "./bin/assert-no-agent.mjs",
-    "lumen": "./bin/init.mjs"
+    "lumen-assert-no-agent": "bin/assert-no-agent.mjs",
+    "lumen": "bin/init.mjs"
   },
   "scripts": {
     "postinstall": "node ./bin/init.mjs",
