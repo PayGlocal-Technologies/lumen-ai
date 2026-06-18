@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.design-agent/
+*.log
+.DS_Store
