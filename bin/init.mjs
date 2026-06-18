@@ -2,14 +2,17 @@
 /**
  * npx @payglocal_ui/lumen init
  *
- * Scaffolds the two files needed to integrate Lumen into a Next.js App Router app:
+ * Scaffolds the files needed to integrate Lumen into a Next.js App Router app:
  *   LUMEN.md                                       — rules file for the design agent
  *   src/app/api/lumen/[[...lumen]]/route.ts        — single catch-all route handler
  *
- * Existing files are not overwritten.
+ * It also wires the production safety gate into package.json as a `postbuild`
+ * script. Existing files are not overwritten, and the gate wiring is idempotent.
  */
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+
+const ASSERT_CMD = "lumen-assert-no-agent";
 
 // When running as postinstall, npm sets INIT_CWD to the consumer's project root.
 // process.cwd() would point inside node_modules/@payglocal_ui/lumen instead.
@@ -27,6 +30,45 @@ function scaffold(relPath, content) {
   mkdirSync(join(full, ".."), { recursive: true });
   writeFileSync(full, content, "utf8");
   console.log(`  write ${relPath}`);
+}
+
+/**
+ * Wire the production safety gate into the consumer's package.json.
+ *
+ * `lumen-assert-no-agent` must run AFTER `next build` (it scans .next/static for
+ * leaked agent code), so it belongs in a `postbuild` script — npm runs postbuild
+ * automatically after build. Idempotent: adds the script if absent, appends to an
+ * existing postbuild that lacks it, and leaves package.json untouched otherwise.
+ */
+function wireSafetyGate() {
+  const pkgPath = join(cwd, "package.json");
+  if (!existsSync(pkgPath)) {
+    console.log("  skip  postbuild gate  (no package.json found)");
+    return;
+  }
+
+  let pkg;
+  try {
+    pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+  } catch {
+    console.log("  skip  postbuild gate  (package.json is not valid JSON)");
+    return;
+  }
+
+  pkg.scripts ??= {};
+  const existing = pkg.scripts.postbuild;
+
+  if (!existing) {
+    pkg.scripts.postbuild = ASSERT_CMD;
+  } else if (existing.includes(ASSERT_CMD)) {
+    console.log("  skip  postbuild gate  (already wired)");
+    return;
+  } else {
+    pkg.scripts.postbuild = `${existing} && ${ASSERT_CMD}`;
+  }
+
+  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf8");
+  console.log(`  write package.json  (postbuild: "${pkg.scripts.postbuild}")`);
 }
 
 console.log("\nScaffolding @payglocal_ui/lumen into your app…\n");
@@ -54,6 +96,8 @@ export const { GET, POST, DELETE, runtime, dynamic } = createLumenHandler({
 });
 `);
 
+wireSafetyGate();
+
 console.log(`
 Done! Next steps:
 
@@ -68,4 +112,5 @@ Done! Next steps:
   3. Run your dev server and click the sparkles badge.
 
   The agent is reachable at /api/lumen (all sub-routes handled automatically).
+  A postbuild gate (lumen-assert-no-agent) now guards your production builds.
 `);

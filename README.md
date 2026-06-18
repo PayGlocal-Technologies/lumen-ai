@@ -37,6 +37,11 @@ This creates:
 - `LUMEN.md` — your project's rules file (re-read on every message)
 - `src/app/api/lumen/[[...lumen]]/route.ts` — the catch-all API route
 
+It also wires the production safety gate into your `package.json` as a
+`postbuild` script (`lumen-assert-no-agent`), so production builds are guarded
+automatically. This is idempotent — it won't duplicate or clobber an existing
+`postbuild`.
+
 > If you install with `--ignore-scripts` (common in CI), the `postinstall`
 > hook won't run — use `npx lumen` to scaffold manually.
 
@@ -107,8 +112,9 @@ Start your dev server and click the sparkles badge in the corner.
   custom `secretPatterns`).
 - **Scoped edits** — the agent edits only your app; `referenceDirs` are
   read-only.
-- **Production gate** — run `npx lumen-assert-no-agent` after `next build` in
-  CI to ensure no agent code ships to production.
+- **Production gate** — `lumen-assert-no-agent` runs after `next build` (wired
+  as a `postbuild` script during install) to ensure no agent code ships to
+  production. You can also invoke it directly in CI.
 
 ## Package exports
 
