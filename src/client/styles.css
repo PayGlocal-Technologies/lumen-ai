@@ -1,90 +1,81 @@
-/*
- * Lumen self-contained stylesheet.
+/* Lumen self-contained stylesheet.
  *
- * Compiled by Tailwind v4 at build time → dist/lumen.css.
+ * @import "tailwindcss" generates Tailwind utilities + preflight scanned from
+ * lumen's own source files. A PostCSS step (scripts/scope-css.mjs) then
+ * rewrites every generated selector to be a descendant of .lumen, so nothing
+ * leaks into the host app — this works regardless of whether the host uses
+ * Tailwind, Ant Design, Bootstrap, or plain CSS.
+ *
  * Consumers import once:  import "@payglocal_ui/lumen/styles.css"
- *
- * If the host app already has Tailwind v4, add:
- *   @source "../node_modules/@payglocal_ui/lumen/src";
- * to avoid duplicated utility classes in production bundles.
  */
-
 @import "tailwindcss";
 
 /* --------------------------------------------------------------------------
-   Private lumen design tokens — light mode.
-
-   These use the --lumen- prefix so they never conflict with the host app's
-   own CSS custom properties. Safe to define on :root.
+   Private lumen design tokens — prefixed names, safe on :root.
+   @layer lumen is intentionally EXCLUDED from PostCSS selector scoping so
+   :root, .lumen { --lumen-* } remains on :root — dialog portals rendered at
+   body level (outside .lumen DOM) still inherit the private tokens.
+   @layer lumen loses to every unlayered :root rule so host tokens always win.
    -------------------------------------------------------------------------- */
-:root {
-  --lumen-background: oklch(1 0 0);
-  --lumen-foreground: oklch(0.145 0 0);
-  --lumen-card: oklch(1 0 0);
-  --lumen-card-foreground: oklch(0.145 0 0);
-  --lumen-muted: oklch(0.961 0 0);
-  --lumen-muted-foreground: oklch(0.455 0 0);
-  --lumen-border: oklch(0.922 0 0);
-  --lumen-primary: oklch(0.205 0 0);
-  --lumen-primary-foreground: oklch(0.985 0 0);
-  --lumen-secondary: oklch(0.961 0 0);
-  --lumen-secondary-foreground: oklch(0.205 0 0);
-  --lumen-destructive: oklch(0.577 0.245 27.325);
-  --lumen-destructive-foreground: oklch(0.985 0 0);
-  --lumen-ring: oklch(0.708 0 0);
-  --lumen-radius: 0.5rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --lumen-background: oklch(0.145 0 0);
-    --lumen-foreground: oklch(0.985 0 0);
-    --lumen-card: oklch(0.205 0 0);
-    --lumen-card-foreground: oklch(0.985 0 0);
-    --lumen-muted: oklch(0.269 0 0);
-    --lumen-muted-foreground: oklch(0.708 0 0);
-    --lumen-border: oklch(0.269 0 0);
-    --lumen-primary: oklch(0.985 0 0);
-    --lumen-primary-foreground: oklch(0.205 0 0);
-    --lumen-secondary: oklch(0.269 0 0);
+@layer lumen {
+  :root,
+  .lumen {
+    --lumen-background: oklch(1 0 0);
+    --lumen-foreground: oklch(0.145 0 0);
+    --lumen-card: oklch(1 0 0);
+    --lumen-card-foreground: oklch(0.145 0 0);
+    --lumen-muted: oklch(0.961 0 0);
+    --lumen-muted-foreground: oklch(0.455 0 0);
+    --lumen-border: oklch(0.922 0 0);
+    --lumen-primary: oklch(0.205 0 0);
+    --lumen-primary-foreground: oklch(0.985 0 0);
+    --lumen-secondary: oklch(0.961 0 0);
     --lumen-secondary-foreground: oklch(0.205 0 0);
-    --lumen-destructive: oklch(0.704 0.191 22.216);
-    --lumen-ring: oklch(0.556 0 0);
+    --lumen-destructive: oklch(0.577 0.245 27.325);
+    --lumen-destructive-foreground: oklch(0.985 0 0);
+    --lumen-ring: oklch(0.708 0 0);
+    --lumen-radius: 0.5rem;
   }
-}
 
-/* --------------------------------------------------------------------------
-   Token mapping — scoped to .lumen ONLY, never :root.
+  @media (prefers-color-scheme: dark) {
+    :root,
+    .lumen {
+      --lumen-background: oklch(0.145 0 0);
+      --lumen-foreground: oklch(0.985 0 0);
+      --lumen-card: oklch(0.205 0 0);
+      --lumen-card-foreground: oklch(0.985 0 0);
+      --lumen-muted: oklch(0.269 0 0);
+      --lumen-muted-foreground: oklch(0.708 0 0);
+      --lumen-border: oklch(0.269 0 0);
+      --lumen-primary: oklch(0.985 0 0);
+      --lumen-primary-foreground: oklch(0.205 0 0);
+      --lumen-secondary: oklch(0.269 0 0);
+      --lumen-secondary-foreground: oklch(0.205 0 0);
+      --lumen-destructive: oklch(0.704 0.191 22.216);
+      --lumen-ring: oklch(0.556 0 0);
+    }
+  }
 
-   Established packages (Mantine, Radix Themes, Ant Design) all converge on
-   this pattern: map design tokens onto the wrapper class, not the document
-   root, so they cannot leak into the host app's cascade. The DesignAgentOverlay
-   root is rendered with display:contents and className="lumen", making all
-   overlay descendants inherit these tokens while the host app is untouched.
-   -------------------------------------------------------------------------- */
-.lumen {
-  --background: var(--lumen-background);
-  --foreground: var(--lumen-foreground);
-  --card: var(--lumen-card);
-  --card-foreground: var(--lumen-card-foreground);
-  --muted: var(--lumen-muted);
-  --muted-foreground: var(--lumen-muted-foreground);
-  --border: var(--lumen-border);
-  --primary: var(--lumen-primary);
-  --primary-foreground: var(--lumen-primary-foreground);
-  --secondary: var(--lumen-secondary);
-  --secondary-foreground: var(--lumen-secondary-foreground);
-  --destructive: var(--lumen-destructive);
-  --destructive-foreground: var(--lumen-destructive-foreground);
-  --ring: var(--lumen-ring);
-  --radius: var(--lumen-radius);
-}
-
-/* --------------------------------------------------------------------------
-   Scoped utility layer — all Tailwind utilities generated from .lumen source
-   -------------------------------------------------------------------------- */
-@layer utilities {
-  .lumen * {
-    box-sizing: border-box;
+  /* Map lumen tokens → flux-ui / Tailwind variable names.
+     .lumen only — no :root mapping so generic names like --background and
+     --primary never touch the host app's :root. The DesignAgentOverlay root
+     wraps its tree in a display:contents .lumen div, so all overlay elements
+     inherit these values while the host app is completely unaffected. */
+  .lumen {
+    --background: var(--lumen-background);
+    --foreground: var(--lumen-foreground);
+    --card: var(--lumen-card);
+    --card-foreground: var(--lumen-card-foreground);
+    --muted: var(--lumen-muted);
+    --muted-foreground: var(--lumen-muted-foreground);
+    --border: var(--lumen-border);
+    --primary: var(--lumen-primary);
+    --primary-foreground: var(--lumen-primary-foreground);
+    --secondary: var(--lumen-secondary);
+    --secondary-foreground: var(--lumen-secondary-foreground);
+    --destructive: var(--lumen-destructive);
+    --destructive-foreground: var(--lumen-destructive-foreground);
+    --ring: var(--lumen-ring);
+    --radius: var(--lumen-radius);
   }
 }

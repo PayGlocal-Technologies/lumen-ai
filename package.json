@@ -1,6 +1,6 @@
 {
   "name": "@payglocal_ui/lumen",
-  "version": "0.1.8",
+  "version": "0.1.10",
   "description": "Dev-only in-app AI design agent — powered by Claude Code",
   "keywords": [
     "design-agent",
@@ -48,7 +48,7 @@
   "scripts": {
     "postinstall": "node ./bin/init.mjs",
     "build": "tsup && npm run build:css",
-    "build:css": "npx @tailwindcss/cli -i ./src/client/styles.css -o ./dist/lumen.css --minify",
+    "build:css": "npx @tailwindcss/cli -i ./src/client/styles.css -o ./dist/lumen-raw.css --minify && node ./scripts/scope-css.mjs && rm ./dist/lumen-raw.css",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
