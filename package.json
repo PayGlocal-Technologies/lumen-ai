@@ -1,6 +1,6 @@
 {
   "name": "@payglocal_ui/lumen",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Dev-only in-app AI design agent — powered by Claude Code",
   "keywords": [
     "design-agent",
