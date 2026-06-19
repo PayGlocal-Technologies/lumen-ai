@@ -54,11 +54,6 @@ function Overlay({ apiBasePath }: { apiBasePath: string }) {
   };
 
   return (
-    // display:contents makes this a zero-layout "phantom" wrapper: it has no
-    // box so it doesn't affect positioning, but it IS a real DOM ancestor, so
-    // .lumen descendant selectors and CSS variable inheritance both work through
-    // it — giving the overlay its own token scope without touching :root.
-    <div className="lumen" style={{ display: "contents" }}>
     <div ref={bounds} className="pointer-events-none fixed inset-0 z-[2147483600]">
       <motion.div
         drag
@@ -94,7 +89,6 @@ function Overlay({ apiBasePath }: { apiBasePath: string }) {
           </Button>
         )}
       </motion.div>
-    </div>
     </div>
   );
 }
