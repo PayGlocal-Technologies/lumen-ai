@@ -4,13 +4,23 @@
  *
  * Scaffolds the files needed to integrate Lumen into a Next.js App Router app:
  *   LUMEN.md                                       — rules file for the design agent
- *   src/app/api/lumen/[[...lumen]]/route.ts        — single catch-all route handler
+ *   src/app/api/lumen/[[...lumen]]/route.dev.ts    — DEV-ONLY catch-all route handler
+ *
+ * The route is scaffolded as `route.dev.ts` (not `route.ts`) so that, paired
+ * with `withLumen()` in next.config, it is compiled only in development and is
+ * never bundled into a production build — keeping the agent route and its heavy
+ * deps (node-pty, the Claude Code CLI) out of `next build` entirely.
  *
  * It also wires the production safety gate into package.json as a `postbuild`
- * script. Existing files are not overwritten, and the gate wiring is idempotent.
+ * script. Existing files are not overwritten, and the gate wiring is idempotent,
+ * so this is safe to re-run on every `npm install` (postinstall).
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+
+const ROUTE_DIR = "src/app/api/lumen/[[...lumen]]";
+const LEGACY_ROUTE = `${ROUTE_DIR}/route.ts`;
+const DEV_ROUTE = `${ROUTE_DIR}/route.dev.ts`;
 
 const ASSERT_CMD = "lumen-assert-no-agent";
 
@@ -88,41 +98,62 @@ scaffold("LUMEN.md", `# Project rules for the Lumen design agent
 <!-- e.g. Feature code lives in src/features/<feature-name>/. -->
 `);
 
-scaffold("src/app/api/lumen/[[...lumen]]/route.ts", `import { createLumenHandler } from "@payglocal_ui/lumen/next";
+scaffold(DEV_ROUTE, `import { createLumenHandler } from "@payglocal_ui/lumen/next";
 
+// This file is named *.dev.ts so it is only compiled as a route in development
+// (see withLumen() in next.config). It is never included in a production build.
 export const { GET, POST, DELETE, runtime, dynamic } = createLumenHandler({
   // referenceDirs: ["../sibling-repo"],  // read-only reference checkouts
   // secretPatterns: [/my_certs/i],       // extra patterns beyond built-in defaults
 });
 `);
 
+// Warn if a legacy always-shipped route.ts is still present from an older install.
+if (existsSync(join(cwd, LEGACY_ROUTE))) {
+  console.log(
+    `  WARN  ${LEGACY_ROUTE} exists — this ships the agent route to production.\n` +
+    `        Delete it and keep ${DEV_ROUTE} instead.`,
+  );
+}
+
 wireSafetyGate();
 
 console.log(`
 Done! Next steps:
 
-  1. Add to your root layout. Use a conditional dynamic import (NOT a static
-     import) so the agent is dead-code-eliminated from production builds — a
-     static import ships the whole client module to prod even when not rendered:
+  1. Wrap your next.config with withLumen so the dev-only route.dev.ts is
+     compiled in dev and excluded from production builds:
 
+       import { withLumen } from "@payglocal_ui/lumen/next";
+
+       const nextConfig = { /* ...your config... */ };
+
+       export default withLumen(nextConfig);
+
+  2. Add the overlay to your root layout. Create a small dev-only wrapper that
+     imports the agent AND its styles together, then dynamic-import the wrapper.
+     (Importing the .css directly inside next/dynamic fails under Turbopack, and
+     a static import would ship the agent to production.)
+
+       // src/components/LumenOverlay.tsx
+       "use client";
+       import { DesignAgentOverlay } from "@payglocal_ui/lumen/client";
+       import "@payglocal_ui/lumen/styles.css";
+       export default DesignAgentOverlay;
+
+       // src/app/layout.tsx
        import dynamic from "next/dynamic";
-
        const DesignAgentOverlay =
          process.env.NODE_ENV === "development"
-           ? dynamic(() =>
-               Promise.all([
-                 import("@payglocal_ui/lumen/client"),
-                 import("@payglocal_ui/lumen/styles.css"),
-               ]).then(([m]) => m.DesignAgentOverlay),
-             )
+           ? dynamic(() => import("@/components/LumenOverlay"))
            : null;
 
        // ...inside <body>:
        {DesignAgentOverlay && <DesignAgentOverlay />}
 
-  2. Edit LUMEN.md to describe your project's conventions.
+  3. Edit LUMEN.md to describe your project's conventions.
 
-  3. Run your dev server and click the sparkles badge.
+  4. Run your dev server and click the sparkles badge.
 
   The agent is reachable at /api/lumen (all sub-routes handled automatically).
   A postbuild gate (lumen-assert-no-agent) now guards your production builds.
