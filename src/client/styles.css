@@ -15,82 +15,68 @@
 @import "tailwindcss";
 
 /* --------------------------------------------------------------------------
-   Lumen theme tokens live inside a `lumen` cascade LAYER.
-
-   Why a layer: Lumen maps its tokens onto the SAME unprefixed CSS variable
-   names that flux-ui reads (`--background`, `--primary`, …). A host app's own
-   design tokens use those exact names too. Because Lumen's stylesheet is loaded
-   dynamically (dev-only), it lands AFTER the host's globals — so as a plain
-   `:root` rule it would win the cascade and repaint the whole host app in
-   Lumen's neutral palette.
-
-   Unlayered styles always beat layered styles, regardless of load order. By
-   putting these declarations in a layer, a host that defines its own
-   (unlayered) `:root` tokens always wins, and the overlay simply inherits the
-   host's theme. Lumen's values then act only as a FALLBACK for hosts that ship
-   no theme of their own.
+   Lumen design tokens — light mode
    -------------------------------------------------------------------------- */
-@layer lumen {
-  /* Lumen design tokens — light mode */
+:root {
+  --lumen-background: oklch(1 0 0);
+  --lumen-foreground: oklch(0.145 0 0);
+  --lumen-card: oklch(1 0 0);
+  --lumen-card-foreground: oklch(0.145 0 0);
+  --lumen-muted: oklch(0.961 0 0);
+  --lumen-muted-foreground: oklch(0.455 0 0);
+  --lumen-border: oklch(0.922 0 0);
+  --lumen-primary: oklch(0.205 0 0);
+  --lumen-primary-foreground: oklch(0.985 0 0);
+  --lumen-secondary: oklch(0.961 0 0);
+  --lumen-secondary-foreground: oklch(0.205 0 0);
+  --lumen-destructive: oklch(0.577 0.245 27.325);
+  --lumen-destructive-foreground: oklch(0.985 0 0);
+  --lumen-ring: oklch(0.708 0 0);
+  --lumen-radius: 0.5rem;
+}
+
+/* Dark mode tokens */
+@media (prefers-color-scheme: dark) {
   :root {
-    --lumen-background: oklch(1 0 0);
-    --lumen-foreground: oklch(0.145 0 0);
-    --lumen-card: oklch(1 0 0);
-    --lumen-card-foreground: oklch(0.145 0 0);
-    --lumen-muted: oklch(0.961 0 0);
-    --lumen-muted-foreground: oklch(0.455 0 0);
-    --lumen-border: oklch(0.922 0 0);
-    --lumen-primary: oklch(0.205 0 0);
-    --lumen-primary-foreground: oklch(0.985 0 0);
-    --lumen-secondary: oklch(0.961 0 0);
-    --lumen-secondary-foreground: oklch(0.205 0 0);
-    --lumen-destructive: oklch(0.577 0.245 27.325);
-    --lumen-destructive-foreground: oklch(0.985 0 0);
-    --lumen-ring: oklch(0.708 0 0);
-    --lumen-radius: 0.5rem;
+    --lumen-background: oklch(0.145 0 0);
+    --lumen-foreground: oklch(0.985 0 0);
+    --lumen-card: oklch(0.205 0 0);
+    --lumen-card-foreground: oklch(0.985 0 0);
+    --lumen-muted: oklch(0.269 0 0);
+    --lumen-muted-foreground: oklch(0.708 0 0);
+    --lumen-border: oklch(0.269 0 0);
+    --lumen-primary: oklch(0.985 0 0);
+    --lumen-primary-foreground: oklch(0.205 0 0);
+    --lumen-secondary: oklch(0.269 0 0);
+    --lumen-secondary-foreground: oklch(0.985 0 0);
+    --lumen-destructive: oklch(0.704 0.191 22.216);
+    --lumen-ring: oklch(0.556 0 0);
   }
+}
 
-  /* Dark mode tokens */
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --lumen-background: oklch(0.145 0 0);
-      --lumen-foreground: oklch(0.985 0 0);
-      --lumen-card: oklch(0.205 0 0);
-      --lumen-card-foreground: oklch(0.985 0 0);
-      --lumen-muted: oklch(0.269 0 0);
-      --lumen-muted-foreground: oklch(0.708 0 0);
-      --lumen-border: oklch(0.269 0 0);
-      --lumen-primary: oklch(0.985 0 0);
-      --lumen-primary-foreground: oklch(0.205 0 0);
-      --lumen-secondary: oklch(0.269 0 0);
-      --lumen-secondary-foreground: oklch(0.985 0 0);
-      --lumen-destructive: oklch(0.704 0.191 22.216);
-      --lumen-ring: oklch(0.556 0 0);
-    }
-  }
-
-  /* Map lumen tokens → flux-ui / Tailwind variable names. Scoped to the `lumen`
-     layer so a host's unlayered tokens override these; for a theme-less host
-     these supply sane defaults so the overlay (and its Dialog portals) stay
-     legible. */
-  :root,
-  .lumen {
-    --background: var(--lumen-background);
-    --foreground: var(--lumen-foreground);
-    --card: var(--lumen-card);
-    --card-foreground: var(--lumen-card-foreground);
-    --muted: var(--lumen-muted);
-    --muted-foreground: var(--lumen-muted-foreground);
-    --border: var(--lumen-border);
-    --primary: var(--lumen-primary);
-    --primary-foreground: var(--lumen-primary-foreground);
-    --secondary: var(--lumen-secondary);
-    --secondary-foreground: var(--lumen-secondary-foreground);
-    --destructive: var(--lumen-destructive);
-    --destructive-foreground: var(--lumen-destructive-foreground);
-    --ring: var(--lumen-ring);
-    --radius: var(--lumen-radius);
-  }
+/* --------------------------------------------------------------------------
+   Map lumen tokens → flux-ui / Tailwind CSS variable names
+   This lets flux-ui components (Button, Dialog, etc.) pick up lumen's theme
+   when rendered inside .lumen. Dialog portal content sits outside .lumen so
+   we put these on :root as well.
+   -------------------------------------------------------------------------- */
+:root,
+.lumen {
+  --background: var(--lumen-background);
+  --foreground: var(--lumen-foreground);
+  --card: var(--lumen-card);
+  --card-foreground: var(--lumen-card-foreground);
+  --muted: var(--lumen-muted);
+  --muted-foreground: var(--lumen-muted-foreground);
+  --border: var(--lumen-border);
+  --primary: var(--lumen-primary);
+  --primary-foreground: var(--lumen-primary-foreground);
+  --secondary: var(--lumen-secondary);
+  --secondary-foreground: var(--lumen-secondary-foreground);
+  --destructive: var(--lumen-destructive);
+  --destructive-foreground: var(--lumen-destructive-foreground);
+  --ring: var(--lumen-ring);
+  --radius: var(--lumen-radius);
 }
 
 /* --------------------------------------------------------------------------

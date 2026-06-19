@@ -3,12 +3,12 @@
  *
  * ── Zero-config (re-export defaults, no custom rules):
  *
- *   // src/app/api/lumen/[[...lumen]]/route.dev.ts
+ *   // src/app/api/lumen/[[...lumen]]/route.ts
  *   export { GET, POST, DELETE, runtime, dynamic } from "@payglocal_ui/lumen/next";
  *
  * ── With custom config (referenceDirs, secretPatterns, etc.):
  *
- *   // src/app/api/lumen/[[...lumen]]/route.dev.ts
+ *   // src/app/api/lumen/[[...lumen]]/route.ts
  *   import { createLumenHandler } from "@payglocal_ui/lumen/next";
  *   export const { GET, POST, DELETE, runtime, dynamic } = createLumenHandler({
  *     referenceDirs: ["../Flux", "../pg-dashboard"],
@@ -27,9 +27,6 @@ export type { LumenConfig } from "../server/index.js";
 
 // Single catch-all handler (recommended)
 export { createLumenHandler, GET, POST, DELETE, runtime, dynamic } from "./handler.js";
-
-// next.config wrapper that gates the dev-only `route.dev.ts` via pageExtensions
-export { withLumen, DEV_PAGE_EXTENSIONS } from "./withLumen.js";
 
 // Individual route factories (kept for consumers who prefer explicit sub-routes)
 import { createChatHandler } from "../server/handlers/chat.js";
